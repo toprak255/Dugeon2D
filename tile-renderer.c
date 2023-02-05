@@ -11,33 +11,50 @@ int playerX, playerY;
 int coordy,coordx;
 void drawPlayer()
 {
-    glColor3f(.2, .4, .6);
+    glColor3f(1, .1, .2);
     glPointSize(8);
     glBegin(GL_POINTS);
     glVertex2i(playerX, playerY);
     glEnd();
 }
 int mapX=32,mapY=16,mapCubeSize=32;
-int map[512]={0,1,1,1,1,1,1,1,1,1,1,1,1};
+int map[512]={};
+
+void loadMap()
+{
+    FILE *File;
+    File = fopen("untitled.csv", "r");
+    int i;
+    {
+    for (i = 0; i < 512; i++)
+    {
+        fscanf(File, "%d,", &map[i]);
+    }
+    
+}
+fclose(File);
+}
+
+
 void renderWorld()
 {
- map[76] = 1;
+ loadMap();
  int x,y,xo,yo;
  for(y=0;y<mapY;y++)
  {
   for(x=0;x<mapX;x++)
   {
-   if(map[y*mapX+x]==1){ glColor3f(1,1,1);} else{ glColor3f(0,0,0);}
+   if(map[y*mapX+x]==0){ glColor3f(.2,.4,1);} else{ glColor3f(.2,1,.5);}
    xo=x*mapCubeSize; yo=y*mapCubeSize;
    glBegin(GL_QUADS); 
-    //  glVertex2i( 0          +xo+1, 0          +yo+1); 
-    //  glVertex2i( 0          +xo+1, mapCubeSize+yo-1); 
-    //  glVertex2i( mapCubeSize+xo-1, mapCubeSize+yo-1);  
-    //  glVertex2i( mapCubeSize+xo-1, 0          +yo+1); 
-            glVertex2i(xo,yo);
-            glVertex2i(xo,yo+mapCubeSize);
-            glVertex2i(xo+mapCubeSize,yo+mapCubeSize);
-            glVertex2i(xo+mapCubeSize,yo);
+     glVertex2i( 0          +xo+1, 0          +yo+1); 
+     glVertex2i( 0          +xo+1, mapCubeSize+yo-1); 
+     glVertex2i( mapCubeSize+xo-1, mapCubeSize+yo-1);  
+     glVertex2i( mapCubeSize+xo-1, 0          +yo+1); 
+            // glVertex2i(xo,yo);
+            // glVertex2i(xo,yo+mapCubeSize);
+            // glVertex2i(xo+mapCubeSize,yo+mapCubeSize);
+            // glVertex2i(xo+mapCubeSize,yo);
    glEnd();
   } 
  } 
@@ -48,7 +65,7 @@ void keyDown(char key, int x, int y)
     if(key=='a'){ Keys.a=1;} 
     if(key=='w'){ Keys.w=1;}
     if(key=='s'){ Keys.s=1;}
-    printf("%i %i\n", playerX, playerY);
+    // printf("%i %i\n", playerX, playerY);
     glutPostRedisplay();
     if (playerX > 1020){playerX = 0;}
     if (playerX < 0){playerX = 1020;}
