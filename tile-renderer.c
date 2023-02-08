@@ -23,7 +23,7 @@ int map[512]={};
 void loadMap()
 {
     FILE *File;
-    File = fopen("untitled.csv", "r");
+    File = fopen("test_map.csv", "r");
     int i;
     {
     for (i = 0; i < 512; i++)
