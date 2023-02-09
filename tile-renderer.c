@@ -3,23 +3,22 @@
 #include <GL/glut.h>
 #include <stdbool.h>
 // #include "stb_image.h"
+#include <unistd.h> //for windows #include<windows.h>
+
+
 typedef struct
 {
- int w,a,d,s;                     //button state on off
+ int a,d,space;                   //button state on off
 }ButtonKeys; ButtonKeys Keys;
+
+
 int playerX, playerY;
 int coordy,coordx;
-void drawPlayer()
-{
-    glColor3f(1, .1, .2);
-    glPointSize(8);
-    glBegin(GL_POINTS);
-    glVertex2i(playerX, playerY);
-    glEnd();
-}
+int vel=0;
 int mapX=32,mapY=16,mapCubeSize=32;
 int map[512]={};
-
+unsigned int microseconds=17000;
+bool collision(int direction);
 void loadMap()
 {
     FILE *File;
@@ -30,12 +29,16 @@ void loadMap()
     {
         fscanf(File, "%d,", &map[i]);
     }
-    
+    fclose(File);
+}}
+void drawPlayer()
+{
+    glColor3f(1, .1, .2);
+    glPointSize(8);
+    glBegin(GL_POINTS);
+    glVertex2i(playerX, playerY);
+    glEnd();
 }
-fclose(File);
-}
-
-
 void renderWorld()
 {
  loadMap();
@@ -63,9 +66,7 @@ void keyDown(char key, int x, int y)
 {
     if(key=='d'){ Keys.d=1;} 	
     if(key=='a'){ Keys.a=1;} 
-    if(key=='w'){ Keys.w=1;}
-    if(key=='s'){ Keys.s=1;}
-    // printf("%i %i\n", playerX, playerY);
+    if(key==32){Keys.space=1;}   
     glutPostRedisplay();
     if (playerX > 1020){playerX = 0;}
     if (playerX < 0){playerX = 1020;}
@@ -76,13 +77,12 @@ void keyUp(unsigned char key,int x,int y)                                    //k
 {
  if(key=='d'){ Keys.d=0;} 	
  if(key=='a'){ Keys.a=0;} 
- if(key=='w'){ Keys.w=0;}
- if(key=='s'){ Keys.s=0;}
+ if(key==32){Keys.space=0;}
  glutPostRedisplay();
 }
 void init()
 {
-    glClearColor(0.3, 0.1, 0.1, 0);
+    glClearColor(0.3, 0.3, 0.3, 0);
     gluOrtho2D(0, 1024, 512, 0);
     playerX = 399, playerY = 199; // setting player position
 }
@@ -95,12 +95,6 @@ int corner()
     cornerCoords[6]=playerX+4;cornerCoords[7]=playerY+4;//BR
 }
 int dotCoord(int coordX, int coordY){
-    // printf("%d,%d  %d,%d\n%d,%d  %d,%d\n#========\n",
-    // cornerCoords[0],cornerCoords[1],
-    // cornerCoords[2],cornerCoords[3],
-    // cornerCoords[4],cornerCoords[5],
-    // cornerCoords[6],cornerCoords[7] 
-    // );
     int y=coordY/mapCubeSize;
     int x=coordX/mapCubeSize;
     int cornerpos = y*mapX+x;
@@ -135,28 +129,36 @@ bool collision(int direction){
     if(map[dotCoord(cornerCoords[4]+1,cornerCoords[5]+1)]== 0 && (map[dotCoord(cornerCoords[6]-1,cornerCoords[7]+1)]==0)){return true;}
     else{return false;}
    }
-   
+}
+void display(){}
+void gravity(){
+    if(collision(3)|| vel<0)
+    {  
+        if(vel<0){for(int i=0;i > vel+2;i--){if(!collision(2)){vel=0;}else{playerY-=1;}}}
+        if (vel>=0){for(int i=0;i < vel+2;i++){if(!collision(3)){vel=0;}else{playerY+=1;}}}
+        vel+=3;
+        usleep(microseconds);
 
-
+    }
+    if(!collision(3)){vel=0;}
 
 }
-void display()
+void idle()
 {
+        gravity();
         if(Keys.a==1 && collision(0))
         { playerX-=4;} 	
         if(Keys.d==1 && collision(1))
         { playerX+=4; } 
-        if(Keys.s==1 && collision(3))
-        { playerY+=4; } 	
-        if(Keys.w==1 && collision(2))
-        { playerY-=4; } 
-    // printf("%i %i\n", coordx, coordy);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    renderWorld();
-    drawPlayer();
-    glutSwapBuffers();
-}
+        if(Keys.space==1&& !collision(3))
+        {vel= -26;}
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        renderWorld();
+        drawPlayer();
+        glutSwapBuffers();
+        usleep(microseconds);
 
+}
 int main(int argc, char *argv[])
 {
     
@@ -169,5 +171,6 @@ int main(int argc, char *argv[])
     glutDisplayFunc(display);
     glutKeyboardFunc(keyDown);
     glutKeyboardUpFunc(keyUp);
+    glutIdleFunc(idle);
     glutMainLoop();
 }
