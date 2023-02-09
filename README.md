@@ -1,2 +1,1 @@
-C flags
--lglut -lGL -lGLU -lm -ldl -ffast-math
+A work in progress 2d tile based game made entirely in C using glut
